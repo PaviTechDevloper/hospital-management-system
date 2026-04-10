@@ -73,44 +73,67 @@ on:
     branches:
       - master
 
-
 jobs:
   build:
     name: Build and analyze
     runs-on: ubuntu-latest
     
     steps:
+      # Checkout code
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - uses: SonarSource/sonarqube-scan-action@v6
+          fetch-depth: 0
+
+      # SonarQube Scan
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      # ✅ SUCCESS MAIL
-      - name: Send Success Mail
-        if: success()
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 587
-          username: ${{ secrets.EMAIL }}
-          password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: Build Passed ✅
-          body: Pipeline executed successfully.
-          to: shubhaambareesh@gmail.com
-          from: pavithrasampath0609@gmail.com
 
-        # ❌ FAILURE MAIL
-      - name: Send Failure Mail
-        if: failure()
+      # Quality Gate Check
+      - name: SonarQube Quality Gate
+        id: qualitygate
+        uses: sonarsource/sonarqube-quality-gate-action@v1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      # ✅ Email if PASSED
+      - name: Send Email on Success
+        if: steps.qualitygate.outputs.quality-gate-status == 'PASSED'
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
           server_port: 587
-          username: ${{ secrets.EMAIL }}
-          password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: Build Failed ❌
-          body: Pipeline failed. Check logs.
-          to: shubhaambareesh@gmail.com
-          from: pavithrasampath0609@gmail.com
+          username: ${{ secrets.SMTP_USER }}
+          password: ${{ secrets.SMTP_PASS }}
+          subject: "✅ SonarQube Passed"
+          body: |
+            Build Status: PASSED
+            Project: ${{ github.repository }}
+            Branch: ${{ github.ref }}
+            Commit: ${{ github.sha }}
+
+            SonarQube Quality Gate PASSED successfully.
+          to: ${{ secrets.EMAIL_TO }}
+          from: ${{ secrets.SMTP_USER }}
+
+      # ❌ Email if FAILED
+      - name: Send Email on Failure
+        if: steps.qualitygate.outputs.quality-gate-status == 'FAILED'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.SMTP_USER }}
+          password: ${{ secrets.SMTP_PASS }}
+          subject: "❌ SonarQube Failed"
+          body: |
+            Build Status: FAILED
+            Project: ${{ github.repository }}
+            Branch: ${{ github.ref }}
+            Commit: ${{ github.sha }}
+
+            SonarQube Quality Gate FAILED. Please check issues.
+          to: ${{ secrets.EMAIL_TO }}
+          from: ${{ secrets.SMTP_USER }}
