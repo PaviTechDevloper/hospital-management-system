@@ -31,19 +31,19 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      # 🔍 Validate secrets (prevents failure)
-      - name: Validate Email Secrets
-        id: check_secrets
+      # ✅ Check if SMTP_USER exists
+      - name: Check SMTP_USER
+        id: check_user
         run: |
-          if [ -z "${{ secrets.SMTP_USER }}" ] || [ -z "${{ secrets.SMTP_PASS }}" ] || [ -z "${{ secrets.EMAIL_TO }}" ]; then
-            echo "missing=true" >> $GITHUB_OUTPUT
+          if [ -z "${{ secrets.SMTP_USER }}" ]; then
+            echo "valid=false" >> $GITHUB_OUTPUT
           else
-            echo "missing=false" >> $GITHUB_OUTPUT
+            echo "valid=true" >> $GITHUB_OUTPUT
           fi
 
-      # ✅ Send Email if PASSED
+      # ✅ Email on Success
       - name: Send Email on Success
-        if: success()
+        if: success() && steps.check_user.outputs.valid == 'true'
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
@@ -56,14 +56,12 @@ jobs:
             Project: ${{ github.repository }}
             Branch: ${{ github.ref }}
             Commit: ${{ github.sha }}
-
-            SonarQube analysis completed successfully.
           to: ${{ secrets.EMAIL_TO }}
           from: ${{ secrets.SMTP_USER }}
 
-      # ❌ Send Email if FAILED
+      # ❌ Email on Failure
       - name: Send Email on Failure
-        if: failure()
+        if: failure() && steps.check_user.outputs.valid == 'true'
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
@@ -76,11 +74,10 @@ jobs:
             Project: ${{ github.repository }}
             Branch: ${{ github.ref }}
             Commit: ${{ github.sha }}
-
-            SonarQube or build failed. Check logs.
           to: ${{ secrets.EMAIL_TO }}
           from: ${{ secrets.SMTP_USER }}
-      # ⚠️ Warning if secrets missing
-      - name: Warn if secrets missing
-        if: steps.check_secrets.outputs.missing == 'true'
-        run: echo "⚠️ Email not sent because SMTP secrets are missing"
+
+      # ⚠️ Warning if secret missing
+      - name: Secret Missing Warning
+        if: steps.check_user.outputs.valid == 'false'
+        run: echo "SMTP_USER secret is missing ❌"
