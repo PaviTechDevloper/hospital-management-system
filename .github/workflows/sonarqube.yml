@@ -87,6 +87,18 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      - name: Send Success Mail
+        if: success()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: Build Passed ✅
+          body: Your CI/CD pipeline executed successfully.
+          to: shubhaambareesh@gmail.com
+          from: pavithrasampath0609@gmail.com
       - name: Send Mail
         if: failure()
         uses: dawidd6/action-send-mail@v3
