@@ -88,15 +88,30 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
             - name: Send Email Notification
-      - name: Send Mail
-        if: always()
+      # ✅ SUCCESS MAIL
+      - name: Send Success Mail
+        if: success()
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
           server_port: 587
           username: ${{ secrets.EMAIL }}
           password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: ${{ job.status == 'success' && 'Build Passed ✅' || 'Build Failed ❌' }}
-          body: ${{ job.status == 'success' && 'Pipeline executed successfully.' || 'Pipeline failed. Check logs.' }}
+          subject: Build Passed ✅
+          body: Pipeline executed successfully.
+          to: shubhaambareesh@gmail.com
+          from: pavithrasampath0609@gmail.com
+
+        # ❌ FAILURE MAIL
+      - name: Send Failure Mail
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: Build Failed ❌
+          body: Pipeline failed. Check logs.
           to: shubhaambareesh@gmail.com
           from: pavithrasampath0609@gmail.com
