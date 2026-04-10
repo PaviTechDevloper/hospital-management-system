@@ -41,46 +41,45 @@ jobs:
             echo "missing=false" >> $GITHUB_OUTPUT
           fi
 
-      # ✅ Email if PASSED
+      # ✅ Send Email if PASSED
       - name: Send Email on Success
-        if: steps.qualitygate.outputs.quality-gate-status == 'PASSED' && steps.check_secrets.outputs.missing == 'false'
+        if: success()
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
           server_port: 587
           username: ${{ secrets.SMTP_USER }}
           password: ${{ secrets.SMTP_PASS }}
-          subject: "✅ SonarQube Passed"
+          subject: "✅ Build Passed"
           body: |
             Build Status: PASSED
             Project: ${{ github.repository }}
             Branch: ${{ github.ref }}
             Commit: ${{ github.sha }}
 
-            SonarQube Quality Gate PASSED successfully.
+            SonarQube analysis completed successfully.
           to: ${{ secrets.EMAIL_TO }}
           from: ${{ secrets.SMTP_USER }}
 
-      # ❌ Email if FAILED
+      # ❌ Send Email if FAILED
       - name: Send Email on Failure
-        if: steps.qualitygate.outputs.quality-gate-status == 'FAILED' && steps.check_secrets.outputs.missing == 'false'
+        if: failure()
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
           server_port: 587
           username: ${{ secrets.SMTP_USER }}
           password: ${{ secrets.SMTP_PASS }}
-          subject: "❌ SonarQube Failed"
+          subject: "❌ Build Failed"
           body: |
             Build Status: FAILED
             Project: ${{ github.repository }}
             Branch: ${{ github.ref }}
             Commit: ${{ github.sha }}
 
-            SonarQube Quality Gate FAILED. Please check issues.
+            SonarQube or build failed. Check logs.
           to: ${{ secrets.EMAIL_TO }}
           from: ${{ secrets.SMTP_USER }}
-
       # ⚠️ Warning if secrets missing
       - name: Warn if secrets missing
         if: steps.check_secrets.outputs.missing == 'true'
