@@ -87,33 +87,15 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      - name: Send Success Mail
-        if: success()
+            - name: Send Email Notification
+        if: always()
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
           server_port: 587
           username: ${{ secrets.EMAIL }}
           password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: Build Passed ✅
-          body: Your CI/CD pipeline executed successfully.
+          subject: ${{ job.status == 'success' && 'Build Passed ✅' || 'Build Failed ❌' }}
+          body: ${{ job.status == 'success' && 'Pipeline executed successfully.' || 'Pipeline failed. Check logs.' }}
           to: shubhaambareesh@gmail.com
           from: pavithrasampath0609@gmail.com
-      - name: Send Mail
-        if: failure()
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 587
-          username: ${{ secrets.EMAIL }}
-          password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: SonarQube Failed ❌
-          body: Pipeline failed due to quality gate issues
-          to: shubhaambareesh@gmail.com
-          from: pavithrasampath0609@gmail.com
-      # If you wish to fail your job when the Quality Gate is red, uncomment the
-      # following lines. This would typically be used to fail a deployment.
-      # - uses: SonarSource/sonarqube-quality-gate-action@v1
-      #   timeout-minutes: 5
-      #   env:
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
