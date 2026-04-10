@@ -77,7 +77,4 @@ jobs:
           to: ${{ secrets.EMAIL_TO }}
           from: ${{ secrets.SMTP_USER }}
 
-      # ⚠️ Warning if secret missing
-      - name: Secret Missing Warning
-        if: steps.check_user.outputs.valid == 'false'
-        run: echo "SMTP_USER secret is missing ❌"
+     
