@@ -99,6 +99,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       # ✅ Email if PASSED
+      - name: Debug SMTP_USER
+        run: echo "Sender is ${{ secrets.SMTP_USER }}"
       - name: Send Email on Success
         if: steps.qualitygate.outputs.quality-gate-status == 'PASSED'
         uses: dawidd6/action-send-mail@v3
