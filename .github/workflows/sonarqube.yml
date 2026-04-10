@@ -116,7 +116,7 @@ jobs:
 
             SonarQube Quality Gate PASSED successfully.
           to: ${{ secrets.EMAIL_TO }}
-          from: ${{ secrets.SMTP_USER }}
+          from: ${{ secrets.SMTP_USER }}   # ✅ FIX ADDED HERE
 
       # ❌ Email if FAILED
       - name: Send Email on Failure
