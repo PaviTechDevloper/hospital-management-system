@@ -88,6 +88,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
             - name: Send Email Notification
+      - name: Send Mail
         if: always()
         uses: dawidd6/action-send-mail@v3
         with:
