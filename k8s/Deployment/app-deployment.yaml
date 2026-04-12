@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: hospital-tracker-app
-  namespace: pavithra-ns
+  namespace: hospital-ns
 spec:
   replicas: 2
   selector:
@@ -12,7 +12,11 @@ spec:
     metadata:
       labels:
         app: hospital-tracker-app
-  spec:
-    containers:
-      - name: hospital-app
-        image: 
+    spec:
+      containers:
+        - name: hospital-app
+          image: pavithrasambath2003/hospital:v1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+    
